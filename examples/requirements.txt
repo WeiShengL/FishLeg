@@ -5,3 +5,4 @@ jaxlib
 matplotlib
 tensorboard
 transformers
+torchsummary
