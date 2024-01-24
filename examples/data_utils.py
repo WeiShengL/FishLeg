@@ -8,6 +8,7 @@ import urllib.request
 from torch.utils.data import Dataset
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+import zipfile
 
 import copy
 import argparse
@@ -353,4 +354,124 @@ def read_data_sets(name_dataset, home_path, if_autoencoder=True, reshape=True):
     )
 
     print(f"Succesfully loaded {name_dataset} dataset.")
+    return data_sets
+
+def unzip_file(zip_src, dst_dir):
+    r = zipfile.is_zipfile(zip_src)
+    if r:
+        print("Unzipping file ", zip_src)
+        fz = zipfile.ZipFile(zip_src, "r")
+        for file in fz.namelist():
+            fz.extract(file, dst_dir)
+        print("Unzip file successed!")
+    else:
+        print("This is not zip")
+    return dst_dir
+
+def get_tinyImageNet():
+    
+    SOURCE_URL = "http://cs231n.stanford.edu/"
+    filename = "tiny-imagenet-200.zip"
+    work_directory = "../data/"
+    zip_file_path = maybe_download(SOURCE_URL, filename, work_directory)
+    file_path = os.path.join(work_directory, "tiny-imagenet-200")
+
+    if not os.path.exists(file_path):
+        unzip_file(zip_file_path, work_directory)
+
+
+
+
+    traindir = os.path.join(file_path, "train")
+    valdir = os.path.join(file_path, "val")
+
+    train_data = datasets.ImageFolder(
+        traindir,
+        transforms.Compose([
+            transforms.RandomResizedCrop(64),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            # transforms.Normalize(mean, std),
+        ]))
+
+    test_data = datasets.ImageFolder(
+        valdir,
+        transforms.Compose([
+            # transforms.Resize(256),
+            transforms.CenterCrop(64),
+            transforms.ToTensor(),
+            # transforms.Normalize(mean, std),
+        ]))
+
+    # input_dim = 3*64*64
+    # output_dim = 200
+
+    class DataSets(object):
+        pass
+
+    data_sets = DataSets()
+
+    data_sets.train = train_data
+    data_sets.test = test_data
+
+    return data_sets
+
+def unzip_file(zip_src, dst_dir):
+    r = zipfile.is_zipfile(zip_src)
+    if r:
+        print("Unzipping file ", zip_src)
+        fz = zipfile.ZipFile(zip_src, "r")
+        for file in fz.namelist():
+            fz.extract(file, dst_dir)
+        print("Unzip file successed!")
+    else:
+        print("This is not zip")
+    return dst_dir
+
+def get_tinyImageNet():
+    
+    SOURCE_URL = "http://cs231n.stanford.edu/"
+    filename = "tiny-imagenet-200.zip"
+    work_directory = "../data/"
+    zip_file_path = maybe_download(SOURCE_URL, filename, work_directory)
+    file_path = os.path.join(work_directory, "tiny-imagenet-200")
+
+    if not os.path.exists(file_path):
+        unzip_file(zip_file_path, work_directory)
+
+
+
+
+    traindir = os.path.join(file_path, "train")
+    valdir = os.path.join(file_path, "val")
+
+    train_data = datasets.ImageFolder(
+        traindir,
+        transforms.Compose([
+            transforms.RandomResizedCrop(64),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            # transforms.Normalize(mean, std),
+        ]))
+
+    test_data = datasets.ImageFolder(
+        valdir,
+        transforms.Compose([
+            # transforms.Resize(256),
+            transforms.CenterCrop(64),
+            transforms.ToTensor(),
+            # transforms.Normalize(mean, std),
+        ]))
+
+    # input_dim = 3*64*64
+    # output_dim = 200
+
+    class DataSets(object):
+        pass
+
+    data_sets = DataSets()
+
+    data_sets.train = train_data
+    data_sets.test = test_data
+
     return data_sets
