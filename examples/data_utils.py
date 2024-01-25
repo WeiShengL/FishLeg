@@ -13,6 +13,10 @@ import zipfile
 import copy
 import argparse
 
+import glob
+from shutil import move
+from os import listdir, rmdir
+
 __all__ = [
     "dense_to_one_hot",
     "maybe_download",
@@ -22,24 +26,43 @@ __all__ = [
     "read_data_sets",
 ]
 
-
-def dense_to_one_hot(y, max_value=9, min_value=0):
+def dense_to_one_hot(y, max_value=9, min_value=0, device="cpu"):
     """
-    converts y into one hot reprsentation.
+    Converts y into one-hot representation.
     Parameters
     ----------
     y : list
-        A list containing continous integer values.
+        A list containing continuous integer values.
     Returns
     -------
-    one_hot : numpy.ndarray
-        A numpy.ndarray object, which is one-hot representation of y.
+    one_hot : torch.Tensor
+        A torch.Tensor object, which is the one-hot representation of y.
     """
-    length = len(y)
-    one_hot = torch.zeros((length, (max_value - min_value + 1)))
-    for i in range(length):
-        one_hot[i, y[i]] = 1
+    y = torch.tensor(y, device=device)
+    num_classes = max_value - min_value + 1
+    one_hot = torch.zeros((y.size(0), num_classes), device=device)
+    one_hot.scatter_(1, (y - min_value).view(-1, 1).to(torch.int64), 1)
     return one_hot
+
+# def dense_to_one_hot(y, max_value=9, min_value=0, device="cpu"):
+#     """
+#     converts y into one hot reprsentation.
+#     Parameters
+#     ----------
+#     y : list
+#         A list containing continous integer values.
+#     Returns
+#     -------
+#     one_hot : numpy.ndarray
+#         A numpy.ndarray object, which is one-hot representation of y.
+#     """
+#     length = len(y)
+#     one_hot = torch.zeros((length, (max_value - min_value + 1)),
+#                           device=device
+#                           )
+#     for i in range(length):
+#         one_hot[i, y[i]] = 1
+#     return one_hot
 
 
 def maybe_download(SOURCE_URL, filename, work_directory):
@@ -296,6 +319,33 @@ def unzip_file(zip_src, dst_dir):
         print("This is not zip")
     return dst_dir
 
+def reformat_tinyImageNet(target_folder):
+    print("Reformating tinyImageNet validation directory ...")
+    val_dict = {}
+    with open(target_folder + 'val_annotations.txt', 'r') as f:
+        for line in f.readlines():
+            split_line = line.split('\t')
+            val_dict[split_line[0]] = split_line[1]
+            
+    paths = glob.glob(target_folder + 'images/*')
+    paths[0].split('/')[-1]
+    for path in paths:
+        file = path.split('/')[-1]
+        folder = val_dict[file]
+        if not os.path.exists(target_folder + str(folder)):
+            os.mkdir(target_folder + str(folder))
+            
+    for path in paths:
+        file = path.split('/')[-1]
+        folder = val_dict[file]
+        dest = target_folder + str(folder) + '/' + str(file)
+        move(path, dest)
+        
+    os.remove(os.path.join(target_folder, 'val_annotations.txt'))
+    rmdir(os.path.join(target_folder, 'images'))
+
+    print("Reformating validation directory successed!")
+
 def get_tinyImageNet():
     
     SOURCE_URL = "http://cs231n.stanford.edu/"
@@ -306,12 +356,14 @@ def get_tinyImageNet():
 
     if not os.path.exists(file_path):
         unzip_file(zip_file_path, work_directory)
-
-
+        reformat_tinyImageNet(os.path.join(file_path, 'val/'))
 
 
     traindir = os.path.join(file_path, "train")
     valdir = os.path.join(file_path, "val")
+
+    # mean = (0.485, 0.456, 0.406)
+    # std = (0.229, 0.224, 0.225)
 
     train_data = datasets.ImageFolder(
         traindir,
