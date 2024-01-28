@@ -26,7 +26,6 @@ sys.path.append("../src")
 from optim.FishLeg import FISH_LIKELIHOODS
 
 
-num_workers = 60//3
 seed = 13
 torch.manual_seed(seed)
 torch.backends.cudnn.benchmark = False
@@ -35,7 +34,6 @@ torch.backends.cudnn.deterministic = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
 dataset = get_tinyImageNet()
-# dataset = read_data_sets("MNIST", "../data/", if_autoencoder=False, reshape=False)
 
 ## Dataset
 train_dataset = dataset.train
@@ -45,47 +43,48 @@ batch_size = 500
 
 train_loader = torch.utils.data.DataLoader(
     train_dataset, batch_size=batch_size, shuffle=True,
-    num_workers=num_workers,
     # collate_fn=lambda x: tuple(x_.to(device) for x_ in default_collate(x)),
 )
 
 aux_loader = torch.utils.data.DataLoader(
     train_dataset, batch_size=batch_size, shuffle=True,
-    num_workers=num_workers,
     # collate_fn=lambda x: tuple(x_.to(device) for x_ in default_collate(x)),
 )
 
 test_loader = torch.utils.data.DataLoader(
     test_dataset, batch_size=1000, shuffle=False,
-    num_workers=num_workers,
     # collate_fn=lambda x: tuple(x_.to(device) for x_ in default_collate(x)),
 )
 
 
-model = models.resnet18(weights='DEFAULT')
-model.avgpool = nn.AdaptiveAvgPool2d(1)
+# model = models.resnet18(weights='DEFAULT')
+# # model.avgpool = nn.AdaptiveAvgPool2d(1)
+# num_ftrs = model.fc.in_features
+# model.fc = nn.Linear(num_ftrs, 200)
+
+# # Freeze all layers
+# for param in model.parameters():
+#     param.requires_grad = False
+
+# # Unfreeze last layer
+# for param in model.fc.parameters():
+#     param.requires_grad = True
+
+model = models.resnet18()
 num_ftrs = model.fc.in_features
 model.fc = nn.Linear(num_ftrs, 200)
-
-# Freeze all layers
-for param in model.parameters():
-    param.requires_grad = False
-
-# Unfreeze last layer
-for param in model.fc.parameters():
-    param.requires_grad = True
 
 
 model = model.to(device)
 
 likelihood = FISH_LIKELIHOODS["softmax"](device=device)
-lr = 0.01
+lr = 0.001
 # betas = (0.7, 0.9)
 weight_decay = 1e-5
 # eps = 1e-8
 
 writer = SummaryWriter(
-    log_dir=f"runs/test/ImageNet_adam_pretrained/lr={lr}_lambda={weight_decay}/{datetime.now().strftime('%Y%m%d-%H%M%S')}",
+    log_dir=f"runs/ImageNet_adam/lr={lr}_lambda={weight_decay}/{datetime.now().strftime('%Y%m%d-%H%M%S')}",
 )
 
 opt = optim.Adam(
@@ -95,10 +94,9 @@ opt = optim.Adam(
     weight_decay=weight_decay,
     # eps=eps,
 )
-# opt = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 
-epochs = 100
+epochs = 20
 
 st = time.time()
 eval_time = 0
