@@ -228,7 +228,7 @@ def initialise_FishModel(
                 momentum=module.momentum,
                 affine=module.affine,
                 track_running_stats=module.track_running_stats,
-                init_scale=fish_scale,
+                # init_scale=fish_scale,
                 device=next(module.parameters()).device,
             )
 

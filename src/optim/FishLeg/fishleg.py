@@ -434,9 +434,12 @@ class FishLeg(Optimizer):
                             param.add_(exp_avg, alpha=-step_size)
 
                 # This is for updating non-FishLeg layers - do we want this/needs checking.
-                elif not isinstance(module, nn.Sequential) and not isinstance(
-                    module, nn.ParameterDict
-                ):
+                # this is a quick fix for ResNet with BasicBlock layers
+                # elif not isinstance(module, nn.Sequential) and not isinstance(
+                #     module, nn.ParameterDict):
+                elif module.__class__.__name__ != "ResNet" and module.__class__.__name__ != "BasicBlock" and not isinstance(module, nn.Sequential) and not isinstance(
+                    module, nn.ParameterDict):
+                    # print("should not be fishmodule", module.__class__.__name__)
                     for n, (_, param) in enumerate(module.named_parameters()):
                         if not isinstance(param, FishAuxParameter):
                             grad = grads[p_idx]
