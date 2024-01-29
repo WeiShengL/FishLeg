@@ -19,7 +19,7 @@ from torch.optim import lr_scheduler
 
 
 
-from data_utils import read_data_sets, get_tinyImageNet, dense_to_one_hot, get_tinyImageNet_SGD
+from data_utils import read_data_sets, get_tinyImageNet, dense_to_one_hot
 
 torch.set_default_dtype(torch.float32)
 
@@ -35,7 +35,7 @@ torch.backends.cudnn.deterministic = True
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
-dataset = get_tinyImageNet_SGD()
+dataset = get_tinyImageNet()
 
 ## Dataset
 train_dataset = dataset.train
