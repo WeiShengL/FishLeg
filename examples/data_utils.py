@@ -444,7 +444,11 @@ def get_tinyImageNet():
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             # transforms.Normalize(mean, std),
-        ]))
+        ]),
+        target_transform=transforms.Lambda(
+            lambda y: torch.zeros(200).scatter_(0, torch.tensor(y), value=1))
+        )
+    
 
     test_data = datasets.ImageFolder(
         valdir,
@@ -453,7 +457,10 @@ def get_tinyImageNet():
             transforms.CenterCrop(64),
             transforms.ToTensor(),
             # transforms.Normalize(mean, std),
-        ]))
+        ]),
+        target_transform=transforms.Lambda(
+            lambda y: torch.zeros(200).scatter_(0, torch.tensor(y), value=1))
+        )
 
     # input_dim = 3*64*64
     # output_dim = 200
@@ -480,50 +487,50 @@ def unzip_file(zip_src, dst_dir):
         print("This is not zip")
     return dst_dir
 
-def get_tinyImageNet():
+# def get_tinyImageNet():
     
-    SOURCE_URL = "http://cs231n.stanford.edu/"
-    filename = "tiny-imagenet-200.zip"
-    work_directory = "../data/"
-    zip_file_path = maybe_download(SOURCE_URL, filename, work_directory)
-    file_path = os.path.join(work_directory, "tiny-imagenet-200")
+#     SOURCE_URL = "http://cs231n.stanford.edu/"
+#     filename = "tiny-imagenet-200.zip"
+#     work_directory = "../data/"
+#     zip_file_path = maybe_download(SOURCE_URL, filename, work_directory)
+#     file_path = os.path.join(work_directory, "tiny-imagenet-200")
 
-    if not os.path.exists(file_path):
-        unzip_file(zip_file_path, work_directory)
-
-
+#     if not os.path.exists(file_path):
+#         unzip_file(zip_file_path, work_directory)
 
 
-    traindir = os.path.join(file_path, "train")
-    valdir = os.path.join(file_path, "val")
 
-    train_data = datasets.ImageFolder(
-        traindir,
-        transforms.Compose([
-            transforms.RandomResizedCrop(64),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            # transforms.Normalize(mean, std),
-        ]))
 
-    test_data = datasets.ImageFolder(
-        valdir,
-        transforms.Compose([
-            # transforms.Resize(256),
-            transforms.CenterCrop(64),
-            transforms.ToTensor(),
-            # transforms.Normalize(mean, std),
-        ]))
+#     traindir = os.path.join(file_path, "train")
+#     valdir = os.path.join(file_path, "val")
 
-    # input_dim = 3*64*64
-    # output_dim = 200
+#     train_data = datasets.ImageFolder(
+#         traindir,
+#         transforms.Compose([
+#             transforms.RandomResizedCrop(64),
+#             transforms.RandomHorizontalFlip(),
+#             transforms.ToTensor(),
+#             # transforms.Normalize(mean, std),
+#         ]))
 
-    class DataSets(object):
-        pass
+#     test_data = datasets.ImageFolder(
+#         valdir,
+#         transforms.Compose([
+#             # transforms.Resize(256),
+#             transforms.CenterCrop(64),
+#             transforms.ToTensor(),
+#             # transforms.Normalize(mean, std),
+#         ]))
 
-    data_sets = DataSets()
+#     # input_dim = 3*64*64
+#     # output_dim = 200
 
-    data_sets.train = train_data
-    data_sets.test = test_data
+#     class DataSets(object):
+#         pass
 
-    return data_sets
+#     data_sets = DataSets()
+
+#     data_sets.train = train_data
+#     data_sets.test = test_data
+
+#     return data_sets
